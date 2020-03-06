@@ -30,6 +30,39 @@ function makeMineMap() {
     }
     return retMap;
 }
+// 周囲8マスの地雷の数を数える
+function countAroundMineNum(I, J) {
+    // 添え字i,jが配列をはみ出さないようにする
+    startI = Math.max(0, I - 1);
+    endI = Math.min(I + 1, height - 1);
+    startJ = Math.max(0, J - 1);
+    endJ = Math.min(J + 1, width - 1);
+
+    let count = 0
+    for (let i = startI; i <= endI; i++) {
+        for (let j = startJ; j <= endJ; j++) {
+            if (field[i * width + j].isMine) {
+                count = count + 1;
+            }
+        }
+    }
+    return count;
+}
+// Consoleにfieldを出力する
+function displayFieldAtConsole(){
+    for (let i = 0; i < height; i++) {
+        let string = "";
+        for (let j = 0; j < width; j++) {
+            pos = i * width + j;
+            if (field[pos].isMine) {
+                string = string + '*';
+            } else {
+                string = string + field[pos].aroundMineNum;
+            }
+        }
+        console.log(string);
+    }
+}
 
 // ゲームの初期化
 startButton.onclick = () => {
@@ -38,18 +71,25 @@ startButton.onclick = () => {
     console.log('mineNum: ' + mineNum + ' mineMapLength: ' + Object.keys(mineMap));
     console.log(mineMap);
     // 地雷をfieldに設置
-    for(let i=0;i<cellNum;i++){
+    for (let i = 0; i < cellNum; i++) {
         let cell = {
-            isMine: null,           // 地雷が設置されているかどうか
-            aroundMineNum: null,    // 周囲の地雷の数
-            isOpened: null         // プレイヤーによって開けられているかどうか
+            isMine: false,      // 地雷が設置されているかどうか
+            aroundMineNum: 0,   // 周囲の地雷の数
+            isOpened: false     // プレイヤーによって開けられているかどうか
         }
         cell.isMine = mineMap.get(i);
-        cell.isOpened = false;
         field[i] = cell
     }
-    console.log('field');
+    console.log('field(周囲の地雷カウント前)');
     console.log(field);
-    // TODO 周囲8マスの地雷数のカウント
+    // 周囲8マスの地雷数のカウント
+    for (let i = 0; i < height; i++) {
+        for (let j = 0; j < width; j++) {
+            field[i * width + j].aroundMineNum = countAroundMineNum(i, j);
+        }
+    }
+    console.log('field(周囲の地雷カウント後)');
+    console.log(field);
     // TODO fieldの描画
+    displayFieldAtConsole();
 }
