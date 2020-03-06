@@ -37,7 +37,19 @@ startButton.onclick = () => {
     const mineMap = makeMineMap();
     console.log('mineNum: ' + mineNum + ' mineMapLength: ' + Object.keys(mineMap));
     console.log(mineMap);
-    // TODO 地雷の設置
+    // 地雷をfieldに設置
+    for(let i=0;i<cellNum;i++){
+        let cell = {
+            isMine: null,           // 地雷が設置されているかどうか
+            aroundMineNum: null,    // 周囲の地雷の数
+            isOpened: null         // プレイヤーによって開けられているかどうか
+        }
+        cell.isMine = mineMap.get(i);
+        cell.isOpened = false;
+        field[i] = cell
+    }
+    console.log('field');
+    console.log(field);
     // TODO 周囲8マスの地雷数のカウント
     // TODO fieldの描画
 }
