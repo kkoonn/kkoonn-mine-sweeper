@@ -4,17 +4,20 @@ const startButton = document.getElementById('start');
 const mineNum = 100;
 const height = 16;
 const width = 30;
-var field = new Array(height * width);
+const cellNum = height * width
+var field = new Array(cellNum);
 
 // 地雷の生成
-function makeMineArray() {
-    // 連番リストを生成
-    let arr = new Array(height * width);
-    for (let i = 0; i < arr.length; i++) {
+function makeMineMap() {
+    // 連番リスト・地雷の連想配列を生成
+    let retMap = new Map();
+    let arr = new Array(cellNum);
+    for (let i = 0; i < cellNum; i++) {
+        retMap.set(i, false);
         arr[i] = i;
     }
     // シャッフル
-    let a = arr.length;
+    let a = cellNum;
     while (a) {
         let j = Math.floor(Math.random() * a);
         let t = arr[--a];
@@ -22,19 +25,19 @@ function makeMineArray() {
         arr[j] = t;
     }
     // 0 ~ mineNum を返す
-    let retArray = new Array(mineNum)
     for (let i = 0; i < mineNum; i++) {
-        retArray[i] = arr[i];
+        retMap.set(arr[i], true);
     }
-    return retArray;
+    return retMap;
 }
 
 // ゲームの初期化
 startButton.onclick = () => {
-    // TODO 地雷の生成・設置
-    const mineArray = makeMineArray();
-    console.log('mineNum: ' + mineNum + ' mineArray.length: ' + mineArray.length);
-    console.log(mineArray);
+    // 地雷の生成
+    const mineMap = makeMineMap();
+    console.log('mineNum: ' + mineNum + ' mineMapLength: ' + Object.keys(mineMap));
+    console.log(mineMap);
+    // TODO 地雷の設置
     // TODO 周囲8マスの地雷数のカウント
     // TODO fieldの描画
 }
