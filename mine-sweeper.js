@@ -26,6 +26,7 @@ function initField() {
     // 新たなfield配列を生成
     let retField = new Array(cellNum);
     for (let i = 0; i < cellNum; i++) {
+        // cellオブジェクトを生成
         let cell = {
             isMine: false,      // 地雷が設置されているかどうか
             aroundMineNum: 0,   // 周囲の地雷の数
@@ -33,6 +34,8 @@ function initField() {
             button: null        // HTML出力用変数
         }
         cell.button = document.createElement('button');
+        cell.button.setAttribute("id", "cell-" + i);
+        cell.button.innerText = '_';
         retField[i] = cell
     }
     return retField;
@@ -107,6 +110,7 @@ function displayFieldWithHTML() {
 
 // ゲームの初期化
 startButton.onclick = () => {
+    console.log('ゲームを初期化します');
     // field初期化
     field = initField();
     // 地雷の生成
@@ -123,12 +127,19 @@ startButton.onclick = () => {
     for (let i = 0; i < height; i++) {
         for (let j = 0; j < width; j++) {
             field[i * width + j].aroundMineNum = countAroundMineNum(i, j);
-            field[i * width + j].button.innerText = field[i * width + j].aroundMineNum
         }
     }
     console.log('field(周囲の地雷カウント後)');
     console.log(field);
-    // TODO fieldの描画
+    // fieldの描画
     displayFieldWithConsole();
     displayFieldWithHTML();
+    // TODO マスのクリック処理
+    for(let i=0;i<cellNum;i++){
+        field[i].button.onclick = () => {
+            cell = field[i]
+            console.log(cell.button.id);
+            cell.button.innerText = cell.aroundMineNum;
+        }
+    }
 }
