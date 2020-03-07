@@ -8,6 +8,10 @@ const width = 30;
 const cellNum = height * width
 var field = new Array()
 
+var GAMEPLAY = 0;
+var GAMEOVER = 1;
+var gameState = GAMEPLAY;
+
 /**
  * 指定した要素の子どもをすべて削除する
  * @param {HTMLElement} element HTMLの要素
@@ -29,6 +33,7 @@ function initField() {
         // cellオブジェクトを生成
         let cell = {
             isMine: false,      // 地雷が設置されているかどうか
+            isFlag: false,      // フラグが設置されているかどうか
             aroundMineNum: 0,   // 周囲の地雷の数
             isOpened: false,    // プレイヤーによって開けられているかどうか
             button: null        // HTML出力用変数
@@ -98,8 +103,8 @@ function displayFieldWithConsole() {
 }
 // game-areaにfieldを出力する
 function displayFieldWithHTML() {
-    for(let i=0;i<height;i++){
-        for(let j=0;j<width;j++){
+    for (let i = 0; i < height; i++) {
+        for (let j = 0; j < width; j++) {
             pos = i * width + j;
             gameDivided.appendChild(field[pos].button);
         }
@@ -107,15 +112,45 @@ function displayFieldWithHTML() {
         gameDivided.appendChild(br);
     }
 }
+// マスのクリック処理を設定する
+function bindClickEvent() {
+    for (let i = 0; i < cellNum; i++) {
+        let cell = field[i];
+        // 左クリック
+        cell.button.onclick = () => {
+            console.log('left-click: ' + cell.button.id);
+            cell.button.innerText = cell.aroundMineNum;
+            cell.isOpened = true;
+            if (cell.isMine) {
+                gameState = GAMEOVER;
+            }
+        }
+        // 右クリック
+        cell.button.oncontextmenu = () => {
+            console.log('right-click: ' + cell.button.id);
+            if(cell.isOpened){      // すでにマスが開かれているとき
+                // TODO フラグを十分な数置いているときまとめて開く処理     
+            } else if(cell.isFlag){ // すでにフラグが置かれているとき
+                cell.isFlag = false;
+                cell.button.innerText = '_';
+            } else{
+                cell.isFlag = true;
+                cell.button.innerText = 'F';
+            }
+            return false;   // contextmenuは表示させない
+        }
+    }
+}
 
 // ゲームの初期化
 startButton.onclick = () => {
     console.log('ゲームを初期化します');
+    gameState = GAMEPLAY;
     // field初期化
     field = initField();
     // 地雷の生成
     const mineMap = makeMineMap();
-    console.log('mineNum: ' + mineNum + ' mineMapLength: ' + Object.keys(mineMap));
+    console.log('mineNum: ' + mineNum);
     console.log(mineMap);
     // 地雷をfieldに設置
     for (let i = 0; i < cellNum; i++) {
@@ -135,11 +170,5 @@ startButton.onclick = () => {
     displayFieldWithConsole();
     displayFieldWithHTML();
     // TODO マスのクリック処理
-    for(let i=0;i<cellNum;i++){
-        field[i].button.onclick = () => {
-            cell = field[i]
-            console.log(cell.button.id);
-            cell.button.innerText = cell.aroundMineNum;
-        }
-    }
+    bindClickEvent();
 }
