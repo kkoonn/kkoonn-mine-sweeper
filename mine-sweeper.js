@@ -151,6 +151,7 @@ function bindClickEvent() {
                 }
             }
             // isOpened のマスの数を数える
+            countIsOpened = 0;
             for (let cellI = 0; cellI < cellNum; cellI++) {
                 if (field[cellI].isOpened) {
                     countIsOpened = countIsOpened + 1;
