@@ -9,6 +9,7 @@ const width = 30;
 const cellNum = height * width
 var field = new Array()
 
+var countIsOpened = 0;
 var GAMEPLAY = 0;
 var GAMEOVER = 1;
 var gameState = GAMEPLAY;
@@ -132,7 +133,7 @@ function bindClickEvent() {
         // 左クリック
         cell.button.onclick = () => {
             console.log('left-click: ' + cell.button.id);
-            if(gameState === GAMEOVER){
+            if (gameState === GAMEOVER) {
                 return;
             }
             if (!cell.isFlag && !cell.isOpened) {
@@ -147,15 +148,24 @@ function bindClickEvent() {
                     finishGame();
                 }
             }
+            // isOpened のマスの数を数える
+            for (let cellI = 0; cellI < cellNum; cellI++) {
+                if (field[cellI].isOpened) {
+                    countIsOpened = countIsOpened + 1;
+                }
+            }
+            if (countIsOpened === (height * width - mineNum)) {
+                finishGame();
+            }
         }
         // 右クリック
         cell.button.oncontextmenu = () => {
             console.log('right-click: ' + cell.button.id);
-            if(gameState === GAMEOVER){
+            if (gameState === GAMEOVER) {
                 return false;
             }
             if (cell.isOpened) {      // すでにマスが開かれているとき
-                openGroupCellWithRightClick(cell.position);     
+                openGroupCellWithRightClick(cell.position);
             } else if (cell.isFlag) { // すでにフラグが置かれているとき
                 cell.isFlag = false;
                 cell.button.innerText = '_';
@@ -210,7 +220,7 @@ function openGroupCellWithLeftClick(cellPosition, stackVariables) {
     console.log('end');
 }
 // 右クリックでマスをまとめて開く処理
-function openGroupCellWithRightClick(cellPosition){
+function openGroupCellWithRightClick(cellPosition) {
     let I = Math.floor(cellPosition / width);
     let J = cellPosition % width;
     console.log(cellPosition);
@@ -222,18 +232,18 @@ function openGroupCellWithRightClick(cellPosition){
     endJ = Math.min(J + 1, width - 1);
 
     let countFlag = 0;
-    for(let i=startI;i<=endI;i++){
-        for(let j=startJ;j<=endJ;j++){
+    for (let i = startI; i <= endI; i++) {
+        for (let j = startJ; j <= endJ; j++) {
             pos = i * width + j;
-            if(field[pos].isFlag){
+            if (field[pos].isFlag) {
                 countFlag = countFlag + 1;
             }
         }
     }
 
-    if (countFlag === field[cellPosition].aroundMineNum){
-        for(let i=startI;i<=endI;i++){
-            for(let j=startJ;j<=endJ;j++){
+    if (countFlag === field[cellPosition].aroundMineNum) {
+        for (let i = startI; i <= endI; i++) {
+            for (let j = startJ; j <= endJ; j++) {
                 pos = i * width + j;
                 field[pos].button.onclick();
             }
@@ -241,10 +251,14 @@ function openGroupCellWithRightClick(cellPosition){
     }
 }
 // GAMEOVER処理
-function finishGame(){
+function finishGame() {
     removeAllChildren(stateDivided);
     stateHTML = document.createElement('p');
-    stateHTML.innerText = 'ゲームオーバー です...';
+    if (gameState === GAMEOVER) {
+        stateHTML.innerText = 'ゲームオーバー です...';
+    } else {
+        stateHTML.innerText = 'ゲームクリア です!!! おめでとうございます!!!';
+    }
     stateDivided.appendChild(stateHTML);
     gameState = GAMEOVER;
 }
@@ -253,6 +267,7 @@ function finishGame(){
 startButton.onclick = () => {
     console.log('ゲームを初期化します');
     gameState = GAMEPLAY;
+    countIsOpened = 0;
     // field初期化
     field = initField();
     // 地雷の生成
