@@ -36,6 +36,8 @@ function initField() {
             isFlag: false,      // フラグが設置されているかどうか
             aroundMineNum: 0,   // 周囲の地雷の数
             isOpened: false,    // プレイヤーによって開けられているかどうか
+            isSpread: false,    // 左クリックでまとめて開くかどうか
+            position: i,        // cellの場所
             button: null        // HTML出力用変数
         }
         cell.button = document.createElement('button');
@@ -69,22 +71,28 @@ function makeMineMap() {
     return retMap;
 }
 // 周囲8マスの地雷の数を数える
-function countAroundMineNum(I, J) {
-    // 添え字i,jが配列をはみ出さないようにする
-    startI = Math.max(0, I - 1);
-    endI = Math.min(I + 1, height - 1);
-    startJ = Math.max(0, J - 1);
-    endJ = Math.min(J + 1, width - 1);
-
-    let count = 0
-    for (let i = startI; i <= endI; i++) {
-        for (let j = startJ; j <= endJ; j++) {
-            if (field[i * width + j].isMine) {
-                count = count + 1;
+function countAroundMineNum() {
+    for (let i = 0; i < height; i++) {
+        for (let j = 0; j < width; j++) {
+            // 添え字i,jが配列をはみ出さないようにする
+            startI = Math.max(0, i - 1);
+            endI = Math.min(i + 1, height - 1);
+            startJ = Math.max(0, j - 1);
+            endJ = Math.min(j + 1, width - 1);
+            let count = 0
+            for (let I = startI; I <= endI; I++) {
+                for (let J = startJ; J <= endJ; J++) {
+                    if (field[I * width + J].isMine) {
+                        count = count + 1;
+                    }
+                }
+            }
+            field[i * width + j].aroundMineNum = count;
+            if (count === 0) {
+                field[i * width + j].isSpread = true;
             }
         }
     }
-    return count;
 }
 // Consoleでfieldを出力する
 function displayFieldWithConsole() {
@@ -119,27 +127,75 @@ function bindClickEvent() {
         // 左クリック
         cell.button.onclick = () => {
             console.log('left-click: ' + cell.button.id);
-            cell.button.innerText = cell.aroundMineNum;
-            cell.isOpened = true;
-            if (cell.isMine) {
-                gameState = GAMEOVER;
+            if (!cell.isFlag && !cell.isOpened) {
+                cell.button.innerText = cell.aroundMineNum;
+                cell.isOpened = true;
+                if (cell.isSpread) {
+                    let stackVariables = new Array();
+                    openGroupCellWithLeftClick(cell.position, stackVariables);
+                }
+                if (cell.isMine) {
+                    gameState = GAMEOVER;
+                }
             }
         }
         // 右クリック
         cell.button.oncontextmenu = () => {
             console.log('right-click: ' + cell.button.id);
-            if(cell.isOpened){      // すでにマスが開かれているとき
+            if (cell.isOpened) {      // すでにマスが開かれているとき
                 // TODO フラグを十分な数置いているときまとめて開く処理     
-            } else if(cell.isFlag){ // すでにフラグが置かれているとき
+            } else if (cell.isFlag) { // すでにフラグが置かれているとき
                 cell.isFlag = false;
                 cell.button.innerText = '_';
-            } else{
+            } else {
                 cell.isFlag = true;
                 cell.button.innerText = 'F';
             }
             return false;   // contextmenuは表示させない
         }
     }
+}
+// 左クリックでマスをまとめて開く処理
+function openGroupCellWithLeftClick(cellPosition, stackVariables) {
+    field[cellPosition].isSpread = false;
+    let I = Math.floor(cellPosition / width);
+    let J = cellPosition % width;
+    console.log(cellPosition);
+    console.log('I: ' + I + ' J: ' + J);
+    // 添え字i,jがfield配列をはみ出さないようにする
+    startI = Math.max(0, I - 1);
+    endI = Math.min(I + 1, height - 1);
+    startJ = Math.max(0, J - 1);
+    endJ = Math.min(J + 1, width - 1);
+    for (let i = startI; i <= endI; i++) {
+        for (let j = startJ; j <= endJ; j++) {
+            if (i === I && j === J) {
+                continue;
+            }
+            pos = i * width + j;
+            field[pos].isOpened = true;
+            field[pos].button.innerText = field[pos].aroundMineNum;
+            if (field[pos].isSpread) {
+                let variables = [cellPosition, I, J, startI, endI, startJ, endJ, i, j, pos];
+                stackVariables.unshift(variables);
+                openGroupCellWithLeftClick(pos, stackVariables);
+                variables = stackVariables[0];
+                cellPosition = variables[0];
+                I = variables[1];
+                J = variables[2];
+                startI = variables[3];
+                endI = variables[4];
+                startJ = variables[5];
+                endJ = variables[6];
+                i = variables[7];
+                j = variables[8];
+                pos = variables[9];
+                stackVariables.shift();
+            }
+            console.log('i: ' + i + ' j: ' + j);
+        }
+    }
+    console.log('end');
 }
 
 // ゲームの初期化
@@ -159,11 +215,7 @@ startButton.onclick = () => {
     console.log('field(周囲の地雷カウント前)');
     console.log(field);
     // 周囲8マスの地雷数のカウント
-    for (let i = 0; i < height; i++) {
-        for (let j = 0; j < width; j++) {
-            field[i * width + j].aroundMineNum = countAroundMineNum(i, j);
-        }
-    }
+    countAroundMineNum();
     console.log('field(周囲の地雷カウント後)');
     console.log(field);
     // fieldの描画
