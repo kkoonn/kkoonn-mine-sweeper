@@ -1,0 +1,12 @@
+.description{
+    float : left ;
+    border : 10px solid #FFFFFF ;
+}
+.game{
+    clear : both ;
+    padding : 5px ;
+}
+.cell{
+    width: 25px;
+    height: 25px;
+}

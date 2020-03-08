@@ -45,6 +45,7 @@ function initField() {
         }
         cell.button = document.createElement('button');
         cell.button.setAttribute("id", "cell-" + i);
+        cell.button.classList.add("cell");
         cell.button.innerText = '_';
         retField[i] = cell
     }
@@ -197,7 +198,7 @@ function openGroupCellWithLeftClick(cellPosition, stackVariables) {
             }
             pos = i * width + j;
             field[pos].isOpened = true;
-            field[pos].button.innerText = field[pos].aroundMineNum;
+            field[pos].button.innerText = field[pos].aroundMineNum
             if (field[pos].isSpread) {
                 let variables = [cellPosition, I, J, startI, endI, startJ, endJ, i, j, pos];
                 stackVariables.unshift(variables);
