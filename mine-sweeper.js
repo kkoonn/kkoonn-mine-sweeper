@@ -135,6 +135,7 @@ function bindClickEvent() {
                     openGroupCellWithLeftClick(cell.position, stackVariables);
                 }
                 if (cell.isMine) {
+                    cell.button.innerText = 'B';
                     gameState = GAMEOVER;
                 }
             }
@@ -143,7 +144,7 @@ function bindClickEvent() {
         cell.button.oncontextmenu = () => {
             console.log('right-click: ' + cell.button.id);
             if (cell.isOpened) {      // すでにマスが開かれているとき
-                // TODO フラグを十分な数置いているときまとめて開く処理     
+                openGroupCellWithRightClick(cell.position);     
             } else if (cell.isFlag) { // すでにフラグが置かれているとき
                 cell.isFlag = false;
                 cell.button.innerText = '_';
@@ -196,6 +197,37 @@ function openGroupCellWithLeftClick(cellPosition, stackVariables) {
         }
     }
     console.log('end');
+}
+// 右クリックでマスをまとめて開く処理
+function openGroupCellWithRightClick(cellPosition){
+    let I = Math.floor(cellPosition / width);
+    let J = cellPosition % width;
+    console.log(cellPosition);
+    console.log('I: ' + I + ' J: ' + J);
+    // 添え字i,jがfield配列をはみ出さないようにする
+    startI = Math.max(0, I - 1);
+    endI = Math.min(I + 1, height - 1);
+    startJ = Math.max(0, J - 1);
+    endJ = Math.min(J + 1, width - 1);
+
+    let countFlag = 0;
+    for(let i=startI;i<=endI;i++){
+        for(let j=startJ;j<=endJ;j++){
+            pos = i * width + j;
+            if(field[pos].isFlag){
+                countFlag = countFlag + 1;
+            }
+        }
+    }
+
+    if (countFlag === field[cellPosition].aroundMineNum){
+        for(let i=startI;i<=endI;i++){
+            for(let j=startJ;j<=endJ;j++){
+                pos = i * width + j;
+                field[pos].button.onclick();
+            }
+        }
+    }
 }
 
 // ゲームの初期化
