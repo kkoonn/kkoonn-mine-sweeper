@@ -1,6 +1,7 @@
 // まいんすいーぱー
 const startButton = document.getElementById('start');
 const gameDivided = document.getElementById('game-area');
+const stateDivided = document.getElementById('game-state-area');
 
 const mineNum = 100;
 const height = 16;
@@ -21,11 +22,12 @@ function removeAllChildren(element) {
         element.removeChild(element.firstChild);
     }
 }
-
 // fieldの初期化
 function initField() {
     // game-areaに描画されているfieldを消去
     removeAllChildren(gameDivided);
+    // game-state-areaの内容を消去
+    removeAllChildren(stateDivided);
 
     // 新たなfield配列を生成
     let retField = new Array(cellNum);
@@ -109,7 +111,7 @@ function displayFieldWithConsole() {
         console.log(string);
     }
 }
-// game-areaにfieldを出力する
+// jsからHTMLに出力する
 function displayFieldWithHTML() {
     for (let i = 0; i < height; i++) {
         for (let j = 0; j < width; j++) {
@@ -119,6 +121,9 @@ function displayFieldWithHTML() {
         let br = document.createElement('br');
         gameDivided.appendChild(br);
     }
+    stateHTML = document.createElement('p');
+    stateHTML.innerText = 'プレイ中 です...';
+    stateDivided.appendChild(stateHTML);
 }
 // マスのクリック処理を設定する
 function bindClickEvent() {
@@ -127,6 +132,9 @@ function bindClickEvent() {
         // 左クリック
         cell.button.onclick = () => {
             console.log('left-click: ' + cell.button.id);
+            if(gameState === GAMEOVER){
+                return;
+            }
             if (!cell.isFlag && !cell.isOpened) {
                 cell.button.innerText = cell.aroundMineNum;
                 cell.isOpened = true;
@@ -136,13 +144,16 @@ function bindClickEvent() {
                 }
                 if (cell.isMine) {
                     cell.button.innerText = 'B';
-                    gameState = GAMEOVER;
+                    finishGame();
                 }
             }
         }
         // 右クリック
         cell.button.oncontextmenu = () => {
             console.log('right-click: ' + cell.button.id);
+            if(gameState === GAMEOVER){
+                return false;
+            }
             if (cell.isOpened) {      // すでにマスが開かれているとき
                 openGroupCellWithRightClick(cell.position);     
             } else if (cell.isFlag) { // すでにフラグが置かれているとき
@@ -228,6 +239,14 @@ function openGroupCellWithRightClick(cellPosition){
             }
         }
     }
+}
+// GAMEOVER処理
+function finishGame(){
+    removeAllChildren(stateDivided);
+    stateHTML = document.createElement('p');
+    stateHTML.innerText = 'ゲームオーバー です...';
+    stateDivided.appendChild(stateHTML);
+    gameState = GAMEOVER;
 }
 
 // ゲームの初期化
