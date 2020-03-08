@@ -145,6 +145,7 @@ function bindClickEvent() {
                 }
                 if (cell.isMine) {
                     cell.button.innerText = 'B';
+                    gameState = GAMEOVER;
                     finishGame();
                 }
             }
